@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/gui/dashboard" }
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
   ]
 }
