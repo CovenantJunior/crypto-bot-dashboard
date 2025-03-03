@@ -1,0 +1,33 @@
+.vercel
+
+# Ignore sensitive config files
+.env
+.env 
+.venv 
+env/ 
+venv/ 
+ENV/ 
+env.bak/ 
+venv.bak/ 
+# config.py  # If storing secrets here (better to use .env)
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore log files and debug files
+*.log
+*.trading_bot.log
+
+# Ignore database files
+*.db
+*.sqlite3
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore system files (macOS & Windows)
+.DS_Store
+Thumbs.db
