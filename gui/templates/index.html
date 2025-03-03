@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-4">Crypto Trading Dashboard</h1>
+
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Trade History -->
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold mb-2">Trade History</h2>
+                <ul id="trade-history" class="space-y-2">
+                    Fetching history...
+                </ul>
+            </div>
+        
+            <!-- Account Balance -->
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold mb-2">Account Balance</h2>
+                <ul id="account-balance" class="space-y-2">
+                    Fetching balance...
+                </ul>
+            </div>
+        
+            <!-- Balance Chart-->
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold mb-2">Balance Chart</h2>
+                <ul id="balance-chart" class="space-y-2">
+                    Fetching balance trend...
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 p-4 bg-gray-800 rounded-lg">
+            <h2 class="text-xl font-semibold mb-2">Trade Actions</h2>
+            <select id="trade-pair" class="bg-gray-700 p-2 rounded w-1/3">
+                <!-- Options will be populated dynamically -->
+            </select>
+            <button onclick="trade('buy')" class="bg-green-500 px-4 py-2 rounded ml-2">Buy</button>
+            <button onclick="trade('sell')" class="bg-red-500 px-4 py-2 rounded ml-2">Sell</button>
+        </div>
+
+        <br>
+
+        <div class="w-full min-h-[1075.47px] flex flex-col items-center justify-center">
+            <h2 class="text-2xl font-bold mb-2">Trading Pairs</h2>
+            <div class="grid grid-cols-3 gap-6 w-full" id="market-data">
+            </div>
+            <!-- Preloader -->
+            <div class="w-full preloader">
+                <div id="preloader" class="flex flex-col justify-center items-center h-screen w-full">
+                    <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32 mb-4"></div>
+                    <p>Fetching trading pairs...</p>
+                </div>
+            </div>
+            </div>
+        </div>
+
+
+    </div>
+    
+    <script>
+        async function fetchData(endpoint, elementId) {
+            const response = await fetch(endpoint);
+            const data = await response.json();
+            if (elementId === 'account-balance') {
+                document.getElementById(elementId).innerHTML = `<li>Balance: ${data} USDT</li>`;
+                return;
+            }
+            if (elementId === 'trade-history') {
+                // document.getElementById(elementId).innerHTML = data.map(trade => `
+                //     <li>
+                //     <span>${trade.date}</span> - 
+                //     <span>${trade.action}</span> - 
+                //     <span>${trade.pair}</span> - 
+                //     <span>${trade.price}</span>
+                //     </li>
+                // `).join('');
+                // return;
+            }
+            if (elementId === 'market-data') {
+                document.getElementById(elementId).innerHTML = Object.entries(data)
+                    .map(([pair, details]) => `
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-semibold mb-2">${pair}</h2>
+                        <ul>
+                        <li>Price: ${details.current}</li>
+                        <li>Dip: ${details.dip}%</li>
+                        <li>Momentum: ${details.momentum}%</li>
+                        <li>Uptrend: ${details.uptrend ? 'Yes' : 'No'}</li>
+                        <li>Volatility: ${details.volatility}%</li>
+                        </ul>
+                    </div>
+                    `).join('');
+                document.querySelector('.preloader').style.display = 'none';
+            }
+        }
+
+        async function updateDashboard() {
+            await fetchData('/market-data', 'market-data');
+            await fetchData('/trade-history', 'trade-history');
+            await fetchData('/account-balance', 'account-balance');
+        }
+
+        async function populateTradingPairs() {
+            const response = await fetch('/trading-pairs');
+            const pairs = await response.json();
+            const select = document.getElementById('trade-pair');
+            select.innerHTML = pairs.map(pair => `<option value="${pair}">${pair}</option>`).join('');
+        }
+        populateTradingPairs();
+
+        async function trade(action) {
+            const pair = document.getElementById("trade-pair").value;
+            await fetch(`/trade`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=${action}&pair=${pair}`,
+            });
+            updateDashboard();
+        }
+
+        updateDashboard();
+        setInterval(updateDashboard, 10000);
+    </script>
+</body>
+
+</html>

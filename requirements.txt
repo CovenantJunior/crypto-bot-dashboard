@@ -1,1 +1,8 @@
-Flask==3.0.3
+python-dotenv
+pybit
+flask
+unittest2
+logging
+requests
+pytz
+numpy
